@@ -1,15 +1,18 @@
+#live app link - truestate-retail-sales-system.vercel.app 
+
+
 # Retail Sales Management System
 
 A full-stack application for managing and analyzing retail sales data with advanced search, filtering, sorting, and pagination capabilities.
 
-## 🚀 Quick Start
+## Quick Start
 
 ### Prerequisites
 
 - Node.js (v16 or higher)
 - npm or yarn
 
-> 📖 **For detailed setup instructions and troubleshooting, see [SETUP.md](./SETUP.md)**
+>  **For detailed setup instructions and troubleshooting, see [SETUP.md](./SETUP.md)**
 
 ### Setup
 
@@ -39,7 +42,7 @@ A full-stack application for managing and analyzing retail sales data with advan
    ```
    The frontend will run on `http://localhost:3000`
 
-## 📁 Project Structure
+## Project Structure
 
 ```
 truEstate/
@@ -70,7 +73,7 @@ truEstate/
 └── README.md           # This file
 ```
 
-## ✨ Features
+## Features
 
 ### Search
 - Full-text search on customer name and phone number
@@ -104,7 +107,7 @@ truEstate/
 - Shareable URLs with filters applied
 - Browser back/forward navigation support
 
-## 🔧 Tech Stack
+##  Tech Stack
 
 ### Backend
 - **Node.js** - Runtime environment
@@ -118,7 +121,7 @@ truEstate/
 - **React Router** - Client-side routing
 - **Tailwind CSS** - Utility-first CSS framework
 
-## 📊 API Endpoints
+## API Endpoints
 
 ### GET `/api/sales`
 Get sales data with filtering, sorting, and pagination.
@@ -140,7 +143,7 @@ Get sales data with filtering, sorting, and pagination.
 ### GET `/api/sales/filter-options`
 Get unique values for all filter options.
 
-## 📝 Dataset Format
+## Dataset Format
 
 The CSV file should contain the following fields:
 
@@ -177,7 +180,7 @@ The CSV file should contain the following fields:
 - Salesperson ID
 - Employee Name
 
-## 🛠️ Development
+## Development
 
 ### Backend Development
 ```bash
@@ -203,11 +206,11 @@ npm run build
 ```
 Output will be in `frontend/dist/`
 
-## 📚 Documentation
+## Documentation
 
 See `docs/architecture.md` for detailed architecture documentation.
 
-## 🐛 Troubleshooting
+## Troubleshooting
 
 1. **Backend not loading CSV:**
    - Ensure `sales.csv` is in `backend/src/data/`
