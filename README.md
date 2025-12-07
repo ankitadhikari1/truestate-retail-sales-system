@@ -1,4 +1,6 @@
-#live app link - truestate-retail-sales-system.vercel.app 
+
+## 🔗 Live Demo  
+[Click here to view the live app](truestate-retail-sales-system.vercel.app)
 
 
 # Retail Sales Management System
