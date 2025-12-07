@@ -20,8 +20,13 @@ You **MUST** set the following environment variable in Vercel:
 2. Navigate to **Settings** → **Environment Variables**
 3. Add a new variable:
    - **Name**: `VITE_API_BASE_URL`
-   - **Value**: `https://truestate-backend-t2bz.onrender.com/api`
+   - **Value**: `https://truestate-backend-t2bz.onrender.com/api` ⚠️ **MUST include `/api`**
    - **Environment**: Production, Preview, and Development (select all)
+
+**⚠️ Critical:** The value MUST end with `/api` because:
+- Backend route is: `/api/sales`
+- Frontend constructs: `${API_BASE_URL}/sales`
+- Result should be: `https://truestate-backend-t2bz.onrender.com/api/sales`
 
 ### Steps to Fix the Connection Issue
 

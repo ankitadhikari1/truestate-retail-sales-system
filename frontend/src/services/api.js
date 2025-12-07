@@ -1,11 +1,20 @@
 // Use environment variable for API URL, fallback to relative path for development
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '/api';
+let API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '/api';
 
-// Log API configuration (helpful for debugging)
-if (import.meta.env.DEV) {
-  console.log('API Base URL:', API_BASE_URL);
-  console.log('Environment:', import.meta.env.MODE);
+// Ensure API_BASE_URL ends with /api if it's a full URL
+if (API_BASE_URL.startsWith('http')) {
+  // If it's a full URL, ensure it ends with /api
+  if (!API_BASE_URL.endsWith('/api')) {
+    // Remove trailing slash if present, then add /api
+    API_BASE_URL = API_BASE_URL.replace(/\/$/, '') + '/api';
+  }
 }
+
+// Log API configuration (helpful for debugging in all environments)
+console.log('🔧 API Configuration:');
+console.log('  API Base URL:', API_BASE_URL);
+console.log('  Environment:', import.meta.env.MODE);
+console.log('  VITE_API_BASE_URL env var:', import.meta.env.VITE_API_BASE_URL || '(not set)');
 
 /**
  * Build query string from params object

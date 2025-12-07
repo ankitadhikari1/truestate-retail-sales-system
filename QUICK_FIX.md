@@ -13,9 +13,11 @@ The frontend is trying to call `/api` which only works in development. In produc
 4. Click **Add New**
 5. Enter:
    - **Key**: `VITE_API_BASE_URL`
-   - **Value**: `https://truestate-backend-t2bz.onrender.com/api`
+   - **Value**: `https://truestate-backend-t2bz.onrender.com/api` ⚠️ **MUST include `/api` at the end**
    - **Environments**: ✅ Production ✅ Preview ✅ Development
 6. Click **Save**
+
+**Important:** The value MUST end with `/api` because the backend routes are at `/api/sales`. If you set it to just `https://truestate-backend-t2bz.onrender.com`, the code will auto-fix it, but it's better to set it correctly.
 
 ### Step 2: Redeploy
 
