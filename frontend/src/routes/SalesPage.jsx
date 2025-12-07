@@ -19,16 +19,13 @@ export function SalesPage() {
   } = useQueryParams();
 
   const [salesData, setSalesData] = useState([]);
-  const [allFilteredData, setAllFilteredData] = useState([]); // For dashboard analytics
+  const [allFilteredData, setAllFilteredData] = useState([]);
   const [pagination, setPagination] = useState(null);
   const [filterOptions, setFilterOptions] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isLoadingDashboard, setIsLoadingDashboard] = useState(false);
   const [error, setError] = useState(null);
   const [showDashboard, setShowDashboard] = useState(true);
-
-  // Get current state from URL params - memoized to prevent infinite loops
-  // Depend on searchParams directly since that's what actually changes
   const searchQuery = useMemo(() => getParam('search', ''), [searchParams, getParam]);
   const currentFilters = useMemo(() => ({
     regions: getArrayParam('regions', []),
@@ -45,7 +42,6 @@ export function SalesPage() {
   const sortOrder = useMemo(() => getParam('sortOrder', 'desc'), [searchParams, getParam]);
   const currentPage = useMemo(() => getNumberParam('page', 1), [searchParams, getNumberParam]);
 
-  // Load filter options on mount
   useEffect(() => {
     fetchFilterOptions()
       .then(setFilterOptions)
@@ -54,8 +50,6 @@ export function SalesPage() {
         setError('Failed to load filter options');
       });
   }, []);
-
-  // Build query params helper
   const buildQueryParams = useCallback((includePagination = true) => {
     const regions = getArrayParam('regions', []);
     const genders = getArrayParam('genders', []);
@@ -82,27 +76,19 @@ export function SalesPage() {
       queryParams.page = getNumberParam('page', 1);
       queryParams.pageSize = 10;
     } else {
-      // For dashboard, fetch all filtered data (no pagination)
       queryParams.page = 1;
-      queryParams.pageSize = 10000; // Large number to get all
+      queryParams.pageSize = 10000;
     }
 
     return queryParams;
   }, [searchParams, getParam, getArrayParam, getNumberParam]);
 
-  // Fetch sales data - depend on searchParams directly to avoid object reference issues
   const loadSales = useCallback(async () => {
     setIsLoading(true);
     setError(null);
 
     try {
       const queryParams = buildQueryParams(true);
-
-      // Debug logging (can be removed in production)
-      if (process.env.NODE_ENV === 'development') {
-        console.log('Sending query params:', queryParams);
-      }
-
       const result = await fetchSales(queryParams);
       setSalesData(result.data || []);
       setPagination(result.pagination || null);
@@ -115,8 +101,6 @@ export function SalesPage() {
       setIsLoading(false);
     }
   }, [buildQueryParams]);
-
-  // Fetch all filtered data for dashboard
   const loadDashboardData = useCallback(async () => {
     if (!showDashboard) return;
     
@@ -133,35 +117,26 @@ export function SalesPage() {
     }
   }, [buildQueryParams, showDashboard]);
 
-  // Reload data when query params change
-  // Use searchParams.toString() as dependency to trigger on any param change
   const searchParamsString = useMemo(() => searchParams.toString(), [searchParams]);
   
   useEffect(() => {
-    console.log('loadSales effect triggered, searchParams:', searchParamsString);
     loadSales();
     loadDashboardData();
   }, [searchParamsString, loadSales, loadDashboardData]);
-
-  // Reload dashboard data when showDashboard changes
   useEffect(() => {
     if (showDashboard) {
       loadDashboardData();
     }
   }, [showDashboard, loadDashboardData]);
 
-  // Handlers - memoized to prevent re-renders
   const handleSearchChange = useCallback((value) => {
     setMultipleParams({
       search: value || undefined,
-      page: 1 // Reset to first page on search
+      page: 1
     });
   }, [setMultipleParams]);
 
   const handleFilterChange = useCallback((key, value) => {
-    console.log('handleFilterChange called:', { key, value, type: typeof value, isArray: Array.isArray(value) });
-    
-    // Handle arrays properly - empty array should clear the filter
     let paramValue;
     if (Array.isArray(value)) {
       paramValue = value.length > 0 ? value : undefined;
@@ -169,12 +144,9 @@ export function SalesPage() {
       paramValue = (value && value !== '') ? value : undefined;
     }
     
-    console.log('Setting param:', { key, paramValue, originalValue: value });
-    
-    // Use setMultipleParams to update both filter and page in one go
     setMultipleParams({
       [key]: paramValue,
-      page: 1 // Reset to first page on filter change
+      page: 1
     });
   }, [setMultipleParams]);
 
@@ -182,7 +154,7 @@ export function SalesPage() {
     setMultipleParams({
       sortBy: newSortBy,
       sortOrder: newSortOrder,
-      page: 1 // Reset to first page on sort change
+      page: 1
     });
   }, [setMultipleParams]);
 

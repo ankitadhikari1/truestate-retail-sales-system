@@ -6,17 +6,14 @@ import salesRoutes from './routes/salesRoutes.js';
 const app = express();
 const PORT = process.env.PORT || 3001;
 
-// Middleware
-// Configure CORS to allow requests from frontend
 app.use(cors({
-  origin: process.env.FRONTEND_URL || '*', // Allow all origins in development, specific in production
+  origin: process.env.FRONTEND_URL || '*',
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization']
 }));
 app.use(express.json());
 
-// Load sales data at startup
 let salesData = [];
 
 async function initializeData() {
@@ -30,18 +27,14 @@ async function initializeData() {
   }
 }
 
-// Routes
 app.use('/api/sales', salesRoutes);
 
-// Health check
 app.get('/health', (req, res) => {
   res.json({ 
     status: 'ok', 
     recordsLoaded: app.locals.salesData?.length || 0 
   });
 });
-
-// Start server
 async function startServer() {
   await initializeData();
   

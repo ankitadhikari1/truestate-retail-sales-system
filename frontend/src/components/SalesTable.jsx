@@ -1,9 +1,4 @@
 export function SalesTable({ data, isLoading }) {
-  // Debug: Log first record to verify field names
-  if (data && data.length > 0 && process.env.NODE_ENV === 'development') {
-    console.log('Sample record fields:', Object.keys(data[0]));
-    console.log('Sample record:', data[0]);
-  }
 
   if (isLoading) {
     return (

@@ -1,10 +1,3 @@
-/**
- * Sales Service - Handles filtering, sorting, and pagination logic
- */
-
-/**
- * Filters sales data based on query parameters
- */
 export function filterSales(salesData, queryParams) {
   let filtered = [...salesData];
 
@@ -26,14 +19,11 @@ export function filterSales(salesData, queryParams) {
           ? queryParams.regions.split(',').map(r => String(r).trim()).filter(r => r)
           : []);
     if (regions.length > 0) {
-      console.log('Filtering by regions:', regions);
-      const beforeCount = filtered.length;
       filtered = filtered.filter(record => {
         const recordRegion = String(record.customerRegion || '').trim();
         const matches = regions.some(region => recordRegion === String(region).trim());
         return matches;
       });
-      console.log(`Regions filter: ${beforeCount} -> ${filtered.length} records`);
     }
   }
 
@@ -81,14 +71,11 @@ export function filterSales(salesData, queryParams) {
           ? queryParams.categories.split(',').map(c => String(c).trim()).filter(c => c)
           : []);
     if (categories.length > 0) {
-      console.log('Filtering by categories:', categories);
-      const beforeCount = filtered.length;
       filtered = filtered.filter(record => {
         const recordCategory = String(record.productCategory || '').trim();
         const matches = categories.some(category => recordCategory === String(category).trim());
         return matches;
       });
-      console.log(`Categories filter: ${beforeCount} -> ${filtered.length} records`);
     }
   }
 
@@ -119,14 +106,11 @@ export function filterSales(salesData, queryParams) {
           ? queryParams.paymentMethods.split(',').map(p => String(p).trim()).filter(p => p)
           : []);
     if (paymentMethods.length > 0) {
-      console.log('Filtering by payment methods:', paymentMethods);
-      const beforeCount = filtered.length;
       filtered = filtered.filter(record => {
         const recordPaymentMethod = String(record.paymentMethod || '').trim();
         const matches = paymentMethods.some(method => recordPaymentMethod === String(method).trim());
         return matches;
       });
-      console.log(`Payment methods filter: ${beforeCount} -> ${filtered.length} records`);
     }
   }
 

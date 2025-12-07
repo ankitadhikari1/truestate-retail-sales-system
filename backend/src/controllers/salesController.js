@@ -1,8 +1,5 @@
 import { processSalesQuery, filterSales } from '../services/salesService.js';
 
-/**
- * Get sales data with filtering, sorting, and pagination
- */
 export function getSales(req, res) {
   try {
     const salesData = req.app.locals.salesData;
@@ -22,13 +19,7 @@ export function getSales(req, res) {
       });
     }
 
-    // Debug logging (can be removed in production)
-    if (process.env.NODE_ENV === 'development') {
-      console.log('Query params received:', JSON.stringify(req.query, null, 2));
-    }
-
     const result = processSalesQuery(salesData, req.query);
-    
     res.json(result);
   } catch (error) {
     console.error('Error processing sales query:', error);
@@ -39,20 +30,12 @@ export function getSales(req, res) {
   }
 }
 
-/**
- * Get unique values for filter options (for populating filter dropdowns)
- * Now accepts query params to filter the dataset first, showing only applicable options
- */
 export function getFilterOptions(req, res) {
   try {
     let salesData = req.app.locals.salesData || [];
     
-    // Apply current filters to show only applicable filter options
-    // This ensures users only see filters that can actually be applied
     if (Object.keys(req.query).length > 0) {
-      // Filter the data first (without pagination) to get applicable options
       salesData = filterSales(salesData, req.query);
-      console.log(`Filter options: Showing options for ${salesData.length} filtered records (from ${req.app.locals.salesData?.length || 0} total)`);
     }
     
     const regions = [...new Set(salesData.map(r => r.customerRegion).filter(Boolean))].sort();

@@ -18,21 +18,15 @@ export function FilterPanel({ filterOptions, filters, onFilterChange }) {
   const lastUserAction = useRef(null);
 
   useEffect(() => {
-    // Only sync from props if we're not in the middle of a user interaction
-    // This prevents the useEffect from overwriting local state during rapid clicks
     if (isUserInteracting.current) {
-      console.log('Skipping sync - user is interacting');
-      // Clear the flag after a delay if it's been too long (safety measure)
       const timeout = setTimeout(() => {
         if (isUserInteracting.current && Date.now() - (lastUserAction.current?.timestamp || 0) > 1000) {
-          console.log('Clearing stale interaction flag');
           isUserInteracting.current = false;
         }
       }, 1000);
       return () => clearTimeout(timeout);
     }
     
-    // Sync localFilters with filters prop when filters prop changes
     const newFilters = {
       regions: Array.isArray(filters.regions) ? filters.regions : [],
       genders: Array.isArray(filters.genders) ? filters.genders : [],
@@ -45,17 +39,11 @@ export function FilterPanel({ filterOptions, filters, onFilterChange }) {
       endDate: filters.endDate || ''
     };
     
-    // Only update if there's an actual change
     setLocalFilters(prev => {
       const currentStr = JSON.stringify(prev);
       const newStr = JSON.stringify(newFilters);
       
       if (currentStr !== newStr) {
-        console.log('Syncing filters prop to localFilters:', { 
-          filtersProp: filters,
-          newFilters,
-          previous: prev
-        });
         return newFilters;
       }
       return prev;
@@ -63,41 +51,24 @@ export function FilterPanel({ filterOptions, filters, onFilterChange }) {
   }, [filters]);
 
   const handleMultiSelectChange = (key, value) => {
-    // Mark that user is interacting
     isUserInteracting.current = true;
     lastUserAction.current = { key, value, timestamp: Date.now() };
     
-    // Use functional update to ensure we have the latest state
     setLocalFilters(prev => {
       const current = Array.isArray(prev[key]) ? prev[key] : [];
       
-      // Check if value is already selected (case-insensitive comparison)
       const isCurrentlySelected = current.some(v => 
         String(v).trim().toLowerCase() === String(value).trim().toLowerCase()
       );
       
-      // Toggle: remove if selected, add if not selected
       const newValue = isCurrentlySelected
         ? current.filter(v => String(v).trim().toLowerCase() !== String(value).trim().toLowerCase())
         : [...current, value];
       
-      console.log(`Filter change - ${key}:`, {
-        current,
-        value,
-        isCurrentlySelected,
-        newValue,
-        allCurrentFilters: prev
-      });
-      
-      // Update local state immediately for UI responsiveness
       const updated = { ...prev, [key]: newValue };
       
-      // Notify parent with the new value immediately
-      // Always pass the array, even if empty - this ensures deselection works
       requestAnimationFrame(() => {
-        console.log(`Notifying parent of filter change - ${key}:`, newValue);
-        onFilterChange(key, newValue); // Pass array directly, even if empty
-        // Clear interaction flag after a delay to allow URL update to complete
+        onFilterChange(key, newValue);
         setTimeout(() => {
           isUserInteracting.current = false;
         }, 300);
@@ -121,19 +92,7 @@ export function FilterPanel({ filterOptions, filters, onFilterChange }) {
   };
 
   const MultiSelectFilter = ({ label, filterKey, options, selected }) => {
-    // Always use localFilters for selected state - it's updated immediately on click
-    // This ensures UI responds instantly without waiting for URL/prop updates
     const actualSelected = Array.isArray(localFilters[filterKey]) ? localFilters[filterKey] : [];
-    
-    // Debug logging
-    if (process.env.NODE_ENV === 'development') {
-      console.log(`Filter ${filterKey} render:`, { 
-        actualSelected,
-        localFiltersKey: localFilters[filterKey],
-        propSelected: selected,
-        options: options?.length || 0 
-      });
-    }
 
     return (
       <div className="mb-5">
@@ -151,11 +110,8 @@ export function FilterPanel({ filterOptions, filters, onFilterChange }) {
         <div className="flex flex-wrap gap-2">
           {options && options.length > 0 ? (
             options.map(option => {
-              // Always use localFilters for selected state - it's the source of truth for UI
-              // This ensures immediate visual feedback
               const currentSelected = Array.isArray(localFilters[filterKey]) ? localFilters[filterKey] : [];
               
-              // Use case-insensitive string comparison
               const isSelected = currentSelected.some(v => 
                 String(v).trim().toLowerCase() === String(option).trim().toLowerCase()
               );
@@ -167,7 +123,6 @@ export function FilterPanel({ filterOptions, filters, onFilterChange }) {
                   onClick={(e) => {
                     e.preventDefault();
                     e.stopPropagation();
-                    console.log(`Filter ${filterKey} clicked:`, option, 'Current selected:', currentSelected, 'Will be:', isSelected ? 'deselected' : 'selected');
                     handleMultiSelectChange(filterKey, option);
                   }}
                   className={`px-4 py-2 rounded-xl text-sm font-bold border-2 transition-all duration-300 transform ${
