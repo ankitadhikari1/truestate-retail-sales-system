@@ -1,4 +1,11 @@
-const API_BASE_URL = '/api';
+// Use environment variable for API URL, fallback to relative path for development
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '/api';
+
+// Log API configuration (helpful for debugging)
+if (import.meta.env.DEV) {
+  console.log('API Base URL:', API_BASE_URL);
+  console.log('Environment:', import.meta.env.MODE);
+}
 
 /**
  * Build query string from params object
@@ -63,7 +70,9 @@ export async function fetchSales(queryParams = {}) {
     
     const response = await fetch(url);
     if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
+      const errorText = await response.text().catch(() => 'Unknown error');
+      console.error('API Error Response:', errorText);
+      throw new Error(`HTTP error! status: ${response.status} - ${errorText}`);
     }
     
     const data = await response.json();
@@ -79,6 +88,10 @@ export async function fetchSales(queryParams = {}) {
     return data;
   } catch (error) {
     console.error('Error fetching sales:', error);
+    // Provide more helpful error messages
+    if (error.message.includes('Failed to fetch') || error.message.includes('NetworkError')) {
+      throw new Error('Unable to connect to the server. Please check if the backend is running and accessible.');
+    }
     throw error;
   }
 }
@@ -98,7 +111,9 @@ export async function fetchFilterOptions(currentFilters = {}) {
     
     const response = await fetch(url);
     if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
+      const errorText = await response.text().catch(() => 'Unknown error');
+      console.error('Filter Options API Error Response:', errorText);
+      throw new Error(`HTTP error! status: ${response.status} - ${errorText}`);
     }
     
     const data = await response.json();
@@ -113,6 +128,10 @@ export async function fetchFilterOptions(currentFilters = {}) {
     return data;
   } catch (error) {
     console.error('Error fetching filter options:', error);
+    // Provide more helpful error messages
+    if (error.message.includes('Failed to fetch') || error.message.includes('NetworkError')) {
+      throw new Error('Unable to connect to the server. Please check if the backend is running and accessible.');
+    }
     throw error;
   }
 }

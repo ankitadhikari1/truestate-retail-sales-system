@@ -138,36 +138,36 @@ export function SalesTable({ data, isLoading }) {
                 >
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
                     {formatDate(date)}
-                  </td>
+                </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-semibold text-gray-900">
                     {customerName || 'N/A'}
-                  </td>
+                </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600 font-mono">
                     {phoneNumber || 'N/A'}
-                  </td>
+                </td>
                   <td className="px-6 py-4 text-sm text-gray-900 max-w-xs truncate">
                     {productName || 'N/A'}
-                  </td>
+                </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
                     <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
                       {productCategory || 'N/A'}
                     </span>
-                  </td>
+                </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-center font-semibold text-gray-900">
                     {quantity || 0}
-                  </td>
+                </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-right font-bold text-green-700">
                     {formatCurrency(finalAmount)}
-                  </td>
+                </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
                     {paymentMethod || 'N/A'}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap">
                     <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold border ${getStatusColor(orderStatus)}`}>
                       {orderStatus || 'N/A'}
-                    </span>
-                  </td>
-                </tr>
+                  </span>
+                </td>
+              </tr>
               );
             })}
           </tbody>

@@ -7,7 +7,13 @@ const app = express();
 const PORT = process.env.PORT || 3001;
 
 // Middleware
-app.use(cors());
+// Configure CORS to allow requests from frontend
+app.use(cors({
+  origin: process.env.FRONTEND_URL || '*', // Allow all origins in development, specific in production
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization']
+}));
 app.use(express.json());
 
 // Load sales data at startup
@@ -17,9 +23,9 @@ async function initializeData() {
   try {
     salesData = await loadSalesData();
     app.locals.salesData = salesData;
-    console.log(`✅ Sales data loaded: ${salesData.length} records`);
+    console.log(` Sales data loaded: ${salesData.length} records`);
   } catch (error) {
-    console.error('❌ Error loading sales data:', error);
+    console.error('Error loading sales data:', error);
     app.locals.salesData = [];
   }
 }
@@ -40,8 +46,8 @@ async function startServer() {
   await initializeData();
   
   app.listen(PORT, () => {
-    console.log(`🚀 Server running on http://localhost:${PORT}`);
-    console.log(`📊 API endpoint: http://localhost:${PORT}/api/sales`);
+    console.log(` Server running on http://localhost:${PORT}`);
+    console.log(`API endpoint: http://localhost:${PORT}/api/sales`);
   });
 }
 
