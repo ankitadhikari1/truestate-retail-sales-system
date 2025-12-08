@@ -127,9 +127,9 @@ export function Dashboard({ salesData, allSalesData = null, isLoading = false })
   }, [dataToAnalyze]);
 
   const formatCurrency = (amount) => {
-    return new Intl.NumberFormat('en-US', {
+    return new Intl.NumberFormat('en-IN', {
       style: 'currency',
-      currency: 'USD',
+      currency: 'INR',
       minimumFractionDigits: 0,
       maximumFractionDigits: 0
     }).format(amount);
@@ -225,7 +225,7 @@ export function Dashboard({ salesData, allSalesData = null, isLoading = false })
                 />
                 <YAxis 
                   tick={{ fill: '#6b7280', fontSize: 12 }}
-                  tickFormatter={(value) => `$${(value / 1000).toFixed(0)}k`}
+                  tickFormatter={(value) => new Intl.NumberFormat('en-IN', { maximumFractionDigits: 0 }).format(value)}
                 />
                 <Tooltip 
                   formatter={(value) => formatCurrency(value)}
@@ -306,7 +306,7 @@ export function Dashboard({ salesData, allSalesData = null, isLoading = false })
                 />
                 <YAxis 
                   tick={{ fill: '#6b7280', fontSize: 12 }}
-                  tickFormatter={(value) => `$${(value / 1000).toFixed(0)}k`}
+                  tickFormatter={(value) => new Intl.NumberFormat('en-IN', { maximumFractionDigits: 0 }).format(value)}
                 />
                 <Tooltip 
                   formatter={(value) => formatCurrency(value)}
@@ -345,7 +345,7 @@ export function Dashboard({ salesData, allSalesData = null, isLoading = false })
                 <XAxis 
                   type="number"
                   tick={{ fill: '#6b7280', fontSize: 12 }}
-                  tickFormatter={(value) => `$${(value / 1000).toFixed(0)}k`}
+                  tickFormatter={(value) => new Intl.NumberFormat('en-IN', { maximumFractionDigits: 0 }).format(value)}
                 />
                 <YAxis 
                   type="category"

@@ -33,7 +33,7 @@ export function startKeepAlive() {
     if (!document.hidden) {
       pingBackend();
     }
-  }, 30000);
+  }, 15000);
 }
 
 export function stopKeepAlive() {
