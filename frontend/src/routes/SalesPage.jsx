@@ -262,8 +262,8 @@ export function SalesPage() {
       </aside>
 
       <div className="flex-1 flex flex-col">
-        <header className="bg-white border-b border-gray-200 px-6 py-4">
-          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+        <header className="bg-white border-b border-gray-200 px-4 sm:px-6 py-3 sm:py-4">
+          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3 sm:gap-4">
             <div>
               <p className="text-xs uppercase text-gray-500 font-semibold">Sales Management System</p>
               <h1 className="text-2xl font-bold text-gray-900">Retail Sales Management</h1>
@@ -308,13 +308,15 @@ export function SalesPage() {
           </div>
 
           <div className="bg-white border border-gray-200 rounded-2xl shadow-sm p-4 space-y-4">
-            <div className="flex flex-wrap gap-4 items-center">
-              {renderFilterGroup('Customer Region', 'regions', filterOptions?.regions || [])}
-              {renderFilterGroup('Gender', 'genders', filterOptions?.genders || [])}
-              {renderFilterGroup('Product Category', 'categories', filterOptions?.categories || [])}
-              {renderFilterGroup('Payment Method', 'paymentMethods', filterOptions?.paymentMethods || [])}
+            <div className="overflow-x-auto">
+              <div className="flex flex-nowrap gap-4 min-w-[720px]">
+                {renderFilterGroup('Customer Region', 'regions', filterOptions?.regions || [])}
+                {renderFilterGroup('Gender', 'genders', filterOptions?.genders || [])}
+                {renderFilterGroup('Product Category', 'categories', filterOptions?.categories || [])}
+                {renderFilterGroup('Payment Method', 'paymentMethods', filterOptions?.paymentMethods || [])}
+              </div>
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
               <div>
                 <p className="text-xs uppercase text-gray-500 font-semibold mb-2">Age Range</p>
                 <div className="flex items-center gap-2">
