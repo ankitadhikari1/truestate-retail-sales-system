@@ -2,11 +2,9 @@ import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useQueryParams } from '../hooks/useQueryParams';
 import { fetchSales, fetchFilterOptions } from '../services/api';
 import { SearchBar } from '../components/SearchBar';
-import { FilterPanel } from '../components/FilterPanel';
 import { SortDropdown } from '../components/SortDropdown';
 import { SalesTable } from '../components/SalesTable';
 import { Pagination } from '../components/Pagination';
-import { Dashboard } from '../components/Dashboard';
 
 export function SalesPage() {
   const {
@@ -23,9 +21,7 @@ export function SalesPage() {
   const [pagination, setPagination] = useState(null);
   const [filterOptions, setFilterOptions] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [isLoadingDashboard, setIsLoadingDashboard] = useState(false);
   const [error, setError] = useState(null);
-  const [showDashboard, setShowDashboard] = useState(true);
   const searchQuery = useMemo(() => getParam('search', ''), [searchParams, getParam]);
   const currentFilters = useMemo(() => ({
     regions: getArrayParam('regions', []),
@@ -102,9 +98,6 @@ export function SalesPage() {
     }
   }, [buildQueryParams]);
   const loadDashboardData = useCallback(async () => {
-    if (!showDashboard) return;
-    
-    setIsLoadingDashboard(true);
     try {
       const queryParams = buildQueryParams(false);
       const result = await fetchSales(queryParams);
@@ -112,10 +105,8 @@ export function SalesPage() {
     } catch (err) {
       console.error('Error loading dashboard data:', err);
       setAllFilteredData([]);
-    } finally {
-      setIsLoadingDashboard(false);
     }
-  }, [buildQueryParams, showDashboard]);
+  }, [buildQueryParams]);
 
   const searchParamsString = useMemo(() => searchParams.toString(), [searchParams]);
   
@@ -123,12 +114,6 @@ export function SalesPage() {
     loadSales();
     loadDashboardData();
   }, [searchParamsString, loadSales, loadDashboardData]);
-  useEffect(() => {
-    if (showDashboard) {
-      loadDashboardData();
-    }
-  }, [showDashboard, loadDashboardData]);
-
   const handleSearchChange = useCallback((value) => {
     setMultipleParams({
       search: value || undefined,
@@ -162,103 +147,254 @@ export function SalesPage() {
     setParam('page', newPage);
   }, [setParam]);
 
+  const toggleFilterOption = useCallback((key, option) => {
+    const current = Array.isArray(currentFilters[key]) ? currentFilters[key] : [];
+    const exists = current.some(v => String(v).trim().toLowerCase() === String(option).trim().toLowerCase());
+    const nextValue = exists
+      ? current.filter(v => String(v).trim().toLowerCase() !== String(option).trim().toLowerCase())
+      : [...current, option];
+    handleFilterChange(key, nextValue);
+  }, [currentFilters, handleFilterChange]);
+
+  const summaryStats = useMemo(() => {
+    const safeData = Array.isArray(allFilteredData) ? allFilteredData : [];
+    const totalUnits = safeData.reduce((sum, record) => sum + (Number(record.quantity) || 0), 0);
+    const totalAmount = safeData.reduce((sum, record) => sum + (Number(record.finalAmount) || 0), 0);
+    const totalDiscount = safeData.reduce((sum, record) => {
+      const total = Number(record.totalAmount) || 0;
+      const finalAmt = Number(record.finalAmount) || 0;
+      return sum + Math.max(0, total - finalAmt);
+    }, 0);
+    return { totalUnits, totalAmount, totalDiscount };
+  }, [allFilteredData]);
+
+  const renderFilterGroup = (label, key, options = []) => {
+    const selected = Array.isArray(currentFilters[key]) ? currentFilters[key] : [];
+    return (
+      <div className="min-w-[220px] space-y-2">
+        <div className="flex items-center justify-between text-xs text-gray-500">
+          <span className="font-semibold text-gray-700">{label}</span>
+          {selected.length > 0 && (
+            <span className="text-[11px] font-semibold text-blue-700 bg-blue-50 border border-blue-100 px-2 py-0.5 rounded-full">
+              {selected.length} selected
+            </span>
+          )}
+        </div>
+        <div className="flex flex-wrap gap-2 max-h-24 overflow-y-auto pr-1">
+          {options.length === 0 && (
+            <span className="text-xs text-gray-400">No options</span>
+          )}
+          {options.map(option => {
+            const isSelected = selected.some(v => String(v).trim().toLowerCase() === String(option).trim().toLowerCase());
+            return (
+              <button
+                key={option}
+                type="button"
+                onClick={() => toggleFilterOption(key, option)}
+                className={`px-3 py-1.5 rounded-full text-xs font-semibold border transition-colors ${
+                  isSelected
+                    ? 'bg-blue-600 text-white border-blue-600 shadow-sm'
+                    : 'bg-white text-gray-700 border-gray-200 hover:border-blue-400 hover:text-blue-700'
+                }`}
+              >
+                {option}
+              </button>
+            );
+          })}
+        </div>
+      </div>
+    );
+  };
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Header */}
-        <div className="mb-8">
-          <div className="flex items-center justify-between mb-4">
-            <div className="flex items-center gap-3">
-              <div className="p-3 bg-gradient-to-br from-blue-600 via-indigo-600 to-purple-600 rounded-xl shadow-xl transform hover:scale-105 transition-transform duration-200">
-                <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-                </svg>
-              </div>
-              <div>
-                <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 bg-clip-text text-transparent">
-                  Retail Sales Management
-                </h1>
-                <p className="mt-1 text-sm text-gray-600">Search, filter, and manage sales transactions with ease</p>
-              </div>
+    <div className="min-h-screen bg-gray-100 text-gray-900 flex">
+      <aside className="hidden md:flex w-64 bg-white border-r border-gray-200 flex-col">
+        <div className="px-6 py-5 border-b border-gray-200">
+          <div className="flex items-center gap-3">
+            <div className="bg-indigo-600 text-white w-10 h-10 rounded-xl flex items-center justify-center font-bold">
+              RS
             </div>
-            <button
-              onClick={() => setShowDashboard(!showDashboard)}
-              className="px-4 py-2 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-lg shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200 flex items-center gap-2 font-medium"
-            >
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-              </svg>
-              {showDashboard ? 'Hide' : 'Show'} Dashboard
+            <div>
+              <p className="text-xs uppercase text-gray-500 tracking-wide">Vault</p>
+              <p className="text-lg font-semibold text-gray-900">Sales Management</p>
+            </div>
+          </div>
+        </div>
+        <nav className="flex-1 px-4 py-4 space-y-6 text-sm">
+          <div className="space-y-2">
+            <p className="text-xs uppercase text-gray-500 font-semibold px-2">General</p>
+            <button className="w-full flex items-center justify-between px-3 py-2 rounded-lg bg-gray-100 text-gray-900 font-semibold">
+              <span className="flex items-center gap-2">
+                <span className="h-2 w-2 rounded-full bg-indigo-500"></span> Dashboard
+              </span>
+              <span className="h-5 w-5 rounded-full border border-gray-300 text-[10px] flex items-center justify-center">3</span>
+            </button>
+            <button className="w-full flex items-center justify-between px-3 py-2 rounded-lg text-gray-700 hover:bg-gray-100">
+              <span className="flex items-center gap-2">
+                <span className="h-2 w-2 rounded-full bg-gray-300"></span> Nexus
+              </span>
+            </button>
+            <button className="w-full flex items-center justify-between px-3 py-2 rounded-lg text-gray-700 hover:bg-gray-100">
+              <span className="flex items-center gap-2">
+                <span className="h-2 w-2 rounded-full bg-gray-300"></span> Intake
+              </span>
             </button>
           </div>
-        </div>
-
-        {error && (
-          <div className="mb-6 bg-red-50 border-l-4 border-red-500 text-red-700 px-4 py-3 rounded-lg shadow-sm flex items-center gap-2">
-            <svg className="w-5 h-5 text-red-500" fill="currentColor" viewBox="0 0 20 20">
-              <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
-            </svg>
-            <span className="font-medium">{error}</span>
+          <div className="space-y-2">
+            <p className="text-xs uppercase text-gray-500 font-semibold px-2">Services</p>
+            {['Pre-active', 'Active', 'Blocked', 'Closed'].map(item => (
+              <button key={item} className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-gray-700 hover:bg-gray-100">
+                <span className="h-2 w-2 rounded-full bg-gray-300"></span>
+                <span>{item}</span>
+              </button>
+            ))}
           </div>
-        )}
-
-        {/* Search Bar */}
-        <div className="mb-6">
-          <SearchBar
-            value={searchQuery}
-            onChange={handleSearchChange}
-          />
-        </div>
-
-        {/* Dashboard */}
-        {showDashboard && (
-          <div className="mb-8">
-            <Dashboard salesData={allFilteredData} isLoading={isLoadingDashboard} />
+          <div className="space-y-2">
+            <p className="text-xs uppercase text-gray-500 font-semibold px-2">Invoices</p>
+            {['Proforma Invoices', 'Final Invoices'].map(item => (
+              <button key={item} className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-gray-700 hover:bg-gray-100">
+                <span className="h-2 w-2 rounded-full bg-gray-300"></span>
+                <span>{item}</span>
+              </button>
+            ))}
           </div>
-        )}
+        </nav>
+      </aside>
 
-        <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
-          {/* Filter Panel */}
-          <div className="lg:col-span-1">
-            <FilterPanel
-              filterOptions={filterOptions}
-              filters={currentFilters}
-              onFilterChange={handleFilterChange}
-            />
+      <div className="flex-1 flex flex-col">
+        <header className="bg-white border-b border-gray-200 px-6 py-4">
+          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+            <div>
+              <p className="text-xs uppercase text-gray-500 font-semibold">Sales Management System</p>
+              <h1 className="text-2xl font-bold text-gray-900">Retail Sales Management</h1>
+            </div>
+            <div className="w-full md:max-w-md">
+              <SearchBar
+                value={searchQuery}
+                onChange={handleSearchChange}
+                placeholder="Search name, phone no..."
+              />
+            </div>
+          </div>
+        </header>
+
+        <main className="p-6 space-y-6">
+          {error && (
+            <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-xl flex items-center gap-2">
+              <svg className="w-5 h-5 text-red-500" fill="currentColor" viewBox="0 0 20 20">
+                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+              </svg>
+              <span className="font-semibold">{error}</span>
+            </div>
+          )}
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="bg-white border border-gray-200 rounded-2xl p-4 shadow-sm">
+              <p className="text-xs uppercase text-gray-500 font-semibold">Total units sold</p>
+              <p className="text-2xl font-bold text-gray-900 mt-2">{summaryStats.totalUnits.toLocaleString('en-IN')}</p>
+            </div>
+            <div className="bg-white border border-gray-200 rounded-2xl p-4 shadow-sm">
+              <p className="text-xs uppercase text-gray-500 font-semibold">Total amount</p>
+              <p className="text-2xl font-bold text-gray-900 mt-2">
+                {new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 }).format(summaryStats.totalAmount)}
+              </p>
+            </div>
+            <div className="bg-white border border-gray-200 rounded-2xl p-4 shadow-sm">
+              <p className="text-xs uppercase text-gray-500 font-semibold">Total discount</p>
+              <p className="text-2xl font-bold text-gray-900 mt-2">
+                {new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 }).format(summaryStats.totalDiscount)}
+              </p>
+            </div>
           </div>
 
-          {/* Main Content */}
-          <div className="lg:col-span-3 space-y-6">
-            {/* Sort and Stats */}
-            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-              {pagination && (
-                <div className="flex items-center gap-2 text-sm text-gray-600">
-                  <span className="font-semibold text-gray-900">
-                    {pagination.totalItems.toLocaleString()}
-                  </span>
-                  <span>records found</span>
+          <div className="bg-white border border-gray-200 rounded-2xl shadow-sm p-4 space-y-4">
+            <div className="flex flex-wrap gap-4 items-center">
+              {renderFilterGroup('Customer Region', 'regions', filterOptions?.regions || [])}
+              {renderFilterGroup('Gender', 'genders', filterOptions?.genders || [])}
+              {renderFilterGroup('Product Category', 'categories', filterOptions?.categories || [])}
+              {renderFilterGroup('Payment Method', 'paymentMethods', filterOptions?.paymentMethods || [])}
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div>
+                <p className="text-xs uppercase text-gray-500 font-semibold mb-2">Age Range</p>
+                <div className="flex items-center gap-2">
+                  <input
+                    type="number"
+                    value={currentFilters.minAge || ''}
+                    onChange={(e) => handleFilterChange('minAge', e.target.value)}
+                    placeholder="Min"
+                    className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-200 focus:border-indigo-400"
+                  />
+                  <span className="text-gray-400">–</span>
+                  <input
+                    type="number"
+                    value={currentFilters.maxAge || ''}
+                    onChange={(e) => handleFilterChange('maxAge', e.target.value)}
+                    placeholder="Max"
+                    className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-200 focus:border-indigo-400"
+                  />
                 </div>
-              )}
-              <div className="w-full sm:w-auto">
-                <SortDropdown
-                  value={{ sortBy, sortOrder }}
-                  onChange={handleSortChange}
-                />
+              </div>
+              <div>
+                <p className="text-xs uppercase text-gray-500 font-semibold mb-2">Date Range</p>
+                <div className="flex items-center gap-2">
+                  <input
+                    type="date"
+                    value={currentFilters.startDate || ''}
+                    onChange={(e) => handleFilterChange('startDate', e.target.value)}
+                    className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-200 focus:border-indigo-400"
+                  />
+                  <span className="text-gray-400">to</span>
+                  <input
+                    type="date"
+                    value={currentFilters.endDate || ''}
+                    onChange={(e) => handleFilterChange('endDate', e.target.value)}
+                    className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-200 focus:border-indigo-400"
+                  />
+                </div>
+              </div>
+              <div className="flex items-end">
+                <div className="w-full">
+                  <p className="text-xs uppercase text-gray-500 font-semibold mb-2">Sort by</p>
+                  <SortDropdown
+                    value={{ sortBy, sortOrder }}
+                    onChange={handleSortChange}
+                  />
+                </div>
               </div>
             </div>
+          </div>
 
-            {/* Sales Table */}
-            <SalesTable data={salesData} isLoading={isLoading} />
+          <div className="bg-white border border-gray-200 rounded-2xl shadow-sm overflow-hidden">
+            <div className="px-4 py-3 border-b border-gray-100 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+              <div className="flex items-center gap-2 text-sm text-gray-600">
+                <span className="font-semibold text-gray-900">
+                  {pagination?.totalItems?.toLocaleString('en-IN') || '0'}
+                </span>
+                <span>records found</span>
+                {isLoading && <span className="text-xs text-gray-400">(loading...)</span>}
+              </div>
+              {pagination && pagination.totalPages > 0 && (
+                <div className="text-xs text-gray-500">
+                  Page {pagination.page} of {pagination.totalPages}
+                </div>
+              )}
+            </div>
 
-            {/* Pagination */}
+            <div className="p-4">
+              <SalesTable data={salesData} isLoading={isLoading} />
+            </div>
+
             {pagination && pagination.totalPages > 0 && (
-              <Pagination
-                pagination={pagination}
-                onPageChange={handlePageChange}
-              />
+              <div className="px-4 py-3 border-t border-gray-100">
+                <Pagination
+                  pagination={pagination}
+                  onPageChange={handlePageChange}
+                />
+              </div>
             )}
           </div>
-        </div>
+        </main>
       </div>
     </div>
   );
