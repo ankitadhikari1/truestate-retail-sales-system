@@ -170,6 +170,11 @@ export function SalesPage() {
 
   const renderFilterGroup = (label, key, options = []) => {
     const selected = Array.isArray(currentFilters[key]) ? currentFilters[key] : [];
+    const handleSelectChange = (event) => {
+      const selectedOptions = Array.from(event.target.selectedOptions).map(opt => opt.value);
+      handleFilterChange(key, selectedOptions);
+    };
+
     return (
       <div className="min-w-[220px] space-y-2">
         <div className="flex items-center justify-between text-xs text-gray-500">
@@ -180,28 +185,23 @@ export function SalesPage() {
             </span>
           )}
         </div>
-        <div className="flex flex-wrap gap-2 max-h-24 overflow-y-auto pr-1">
-          {options.length === 0 && (
-            <span className="text-xs text-gray-400">No options</span>
-          )}
-          {options.map(option => {
-            const isSelected = selected.some(v => String(v).trim().toLowerCase() === String(option).trim().toLowerCase());
-            return (
-              <button
-                key={option}
-                type="button"
-                onClick={() => toggleFilterOption(key, option)}
-                className={`px-3 py-1.5 rounded-full text-xs font-semibold border transition-colors ${
-                  isSelected
-                    ? 'bg-blue-600 text-white border-blue-600 shadow-sm'
-                    : 'bg-white text-gray-700 border-gray-200 hover:border-blue-400 hover:text-blue-700'
-                }`}
-              >
+        <select
+          multiple
+          value={selected}
+          onChange={handleSelectChange}
+          className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-200 focus:border-indigo-400 bg-white"
+          size={Math.min(6, Math.max(3, options.length))}
+        >
+          {options.length === 0 ? (
+            <option disabled>No options</option>
+          ) : (
+            options.map(option => (
+              <option key={option} value={option}>
                 {option}
-              </button>
-            );
-          })}
-        </div>
+              </option>
+            ))
+          )}
+        </select>
       </div>
     );
   };
